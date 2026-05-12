@@ -79,6 +79,10 @@ jobs:
           mv cmdline-tools latest
         fi
         
+        # Create legacy tools/bin symlink for Buildozer compatibility
+        mkdir -p "$SDK_DIR/tools/bin"
+        ln -sf "$SDK_DIR/cmdline-tools/latest/bin/sdkmanager" "$SDK_DIR/tools/bin/sdkmanager"
+        
         # Accept all licenses automatically
         yes | "$SDK_DIR/cmdline-tools/latest/bin/sdkmanager" --licenses --sdk_root="$SDK_DIR" || true
         
