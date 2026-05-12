@@ -64,12 +64,34 @@ jobs:
         key: ${{ runner.os }}-buildozer-${{ hashFiles('buildozer.spec') }}
         restore-keys: |
           ${{ runner.os }}-buildozer-
-          
+
+    - name: Setup Android SDK and accept licenses
+      run: |
+        # Download and setup Android SDK command line tools
+        SDK_DIR="$HOME/.buildozer/android/platform/android-sdk"
+        mkdir -p "$SDK_DIR/cmdline-tools"
+        cd "$SDK_DIR/cmdline-tools"
+        
+        # Download command line tools if not exists
+        if [ ! -d "latest" ]; then
+          wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
+          unzip -q commandlinetools-linux-9477386_latest.zip
+          mv cmdline-tools latest
+        fi
+        
+        # Accept all licenses automatically
+        yes | "$SDK_DIR/cmdline-tools/latest/bin/sdkmanager" --licenses --sdk_root="$SDK_DIR" || true
+        
+        # Install required build-tools
+        "$SDK_DIR/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$SDK_DIR" "build-tools;33.0.0" "platform-tools" "platforms;android-33" || true
+      continue-on-error: true
+
     - name: Build APK with Buildozer
       run: |
         buildozer android debug
       env:
-        ANDROID_HOME: ${{ github.workspace }}/.android
+        ANDROID_HOME: $HOME/.buildozer/android/platform/android-sdk
+        BUILDOZER_WARN_ON_ROOT: 0
         
     - name: Upload APK artifact
       uses: actions/upload-artifact@v4
