@@ -2,7 +2,6 @@
 # -*- coding: utf-8 -*-
 """
 物品位置管理工具 - Android 版 (Kivy)
-Buildozer 打包入口文件（将 item_finder_kivy.py 复制为 main.py）
 功能与桌面版 item_finder.py 完全一致
 """
 
@@ -22,7 +21,6 @@ from kivy.uix.image import Image
 from kivy.uix.spinner import Spinner
 from kivy.uix.screenmanager import ScreenManager, Screen
 from kivy.core.window import Window
-from kivy.properties import StringProperty, ObjectProperty
 from kivy.metrics import dp
 from kivy.graphics import Color, Rectangle
 
@@ -58,10 +56,6 @@ def init_db():
     conn.close()
 
 class DB:
-    @staticmethod
-    def get_conn():
-        return sqlite3.connect(DB_PATH)
-
     @staticmethod
     def get_items(view="all", search="", category="全部"):
         conn = sqlite3.connect(DB_PATH)
@@ -242,7 +236,9 @@ class ItemCard(Card):
         # 标题行
         title_box = BoxLayout(size_hint_y=None, height=dp(30))
         pin_text = "[color=FFD700]★[/color] " if is_pinned else ""
-        title_box.add_widget(Label(text=f"{pin_text}{name}", font_size=dp(16), bold=True, color=(0.1,0.1,0.1,1), halign='left', valign='middle'))
+        title_label = Label(text=f"{pin_text}{name}", font_size=dp(16), bold=True, color=(0.1,0.1,0.1,1), halign='left', valign='middle')
+        title_label.bind(size=title_label.setter('text_size'))
+        title_box.add_widget(title_label)
         self.add_widget(title_box)
 
         # 分类
