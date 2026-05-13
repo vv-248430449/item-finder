@@ -10,6 +10,14 @@ import sqlite3
 from datetime import datetime
 
 from kivy.app import App
+from kivy.resources import resource_add_path
+from kivy.core.text import LabelBase
+
+# ============ 中文字体配置（替换默认 Roboto 字体） ============
+_APP_DIR = os.path.dirname(os.path.abspath(__file__))
+resource_add_path(os.path.join(_APP_DIR, "fonts"))
+LabelBase.register('Roboto', fn_regular='wqy-microhei.ttc')
+
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.scrollview import ScrollView
