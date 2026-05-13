@@ -9,17 +9,17 @@ on:
 
 jobs:
   build-apk:
-    runs-on: ubuntu-latest
-    
+    runs-on: ubuntu-22.04
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v4
-      
+
     - name: Set up Python
       uses: actions/setup-python@v5
       with:
         python-version: '3.10'
-        
+
     - name: Install system dependencies
       run: |
         sudo apt-get update
@@ -48,13 +48,14 @@ jobs:
           gstreamer1.0-plugins-base \
           gstreamer1.0-plugins-good \
           zip \
-          unzip
-          
+          unzip \
+          openjdk-17-jdk
+
     - name: Install Python dependencies
       run: |
         python -m pip install --upgrade pip
         pip install kivy buildozer cython
-        
+
     - name: Cache Buildozer dependencies
       uses: actions/cache@v4
       with:
@@ -65,28 +66,22 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-buildozer-
 
-    - name: Setup Android SDK and accept licenses
+    - name: Setup Android SDK
       run: |
-        # Download and setup Android SDK command line tools
         SDK_DIR="$HOME/.buildozer/android/platform/android-sdk"
         mkdir -p "$SDK_DIR/cmdline-tools"
         cd "$SDK_DIR/cmdline-tools"
-        
-        # Download command line tools if not exists
+
         if [ ! -d "latest" ]; then
           wget -q https://dl.google.com/android/repository/commandlinetools-linux-9477386_latest.zip
           unzip -q commandlinetools-linux-9477386_latest.zip
           mv cmdline-tools latest
         fi
-        
-        # Create legacy tools/bin symlink for Buildozer compatibility
+
         mkdir -p "$SDK_DIR/tools/bin"
         ln -sf "$SDK_DIR/cmdline-tools/latest/bin/sdkmanager" "$SDK_DIR/tools/bin/sdkmanager"
-        
-        # Accept all licenses automatically
+
         yes | "$SDK_DIR/cmdline-tools/latest/bin/sdkmanager" --licenses --sdk_root="$SDK_DIR" || true
-        
-        # Install required build-tools
         "$SDK_DIR/cmdline-tools/latest/bin/sdkmanager" --sdk_root="$SDK_DIR" "build-tools;33.0.0" "platform-tools" "platforms;android-33" || true
       continue-on-error: true
 
@@ -96,14 +91,15 @@ jobs:
       env:
         ANDROID_HOME: $HOME/.buildozer/android/platform/android-sdk
         BUILDOZER_WARN_ON_ROOT: 0
-        
+        JAVA_HOME: /usr/lib/jvm/java-17-openjdk-amd64
+
     - name: Upload APK artifact
       uses: actions/upload-artifact@v4
       with:
         name: item-finder-apk
         path: bin/*.apk
         if-no-files-found: error
-        
+
     - name: Create Release
       if: github.event_name == 'push' && (github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master')
       uses: softprops/action-gh-release@v1
