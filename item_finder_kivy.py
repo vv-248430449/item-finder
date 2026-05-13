@@ -10,14 +10,6 @@ import sqlite3
 from datetime import datetime
 
 from kivy.app import App
-from kivy.resources import resource_add_path
-from kivy.core.text import LabelBase
-
-# ============ 中文字体配置（替换默认 Roboto 字体） ============
-_APP_DIR = os.path.dirname(os.path.abspath(__file__))
-resource_add_path(os.path.join(_APP_DIR, "fonts"))
-LabelBase.register('Roboto', fn_regular='wqy-microhei.ttc')
-
 from kivy.uix.boxlayout import BoxLayout
 from kivy.uix.gridlayout import GridLayout
 from kivy.uix.scrollview import ScrollView
@@ -408,6 +400,16 @@ class MainScreen(Screen):
 
 class ItemFinderApp(App):
     def build(self):
+        # 安全设置中文字体，加载失败也不闪退
+        try:
+            from kivy.uix.label import Label
+            from kivy.uix.button import Button
+            font_path = os.path.join(APP_DIR, "fonts", "wqy-microhei.ttc")
+            Label.font_name = font_path
+            Button.font_name = font_path
+        except Exception:
+            pass
+
         Window.clearcolor = (1, 1, 1, 1)
         init_db()
         self.sm = ScreenManager()
